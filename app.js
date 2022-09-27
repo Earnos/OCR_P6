@@ -18,10 +18,10 @@ const path = require("path");
 
 // Connect to database MongoDB
 mongoose
-  .connect(
-    "mongodb+srv://user:Budokai33@clusterp6.iusvsi5.mongodb.net/?retryWrites=true&w=majority",
-    { useNewUrlParser: true, useUnifiedTopology: true }
-  )
+  .connect(process.env.SECRET_KEY, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
   .then(() => console.log("Connexion à MongoDB réussie !"))
   .catch(() => console.log("Connexion à MongoDB échouée !"));
 
