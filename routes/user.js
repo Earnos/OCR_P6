@@ -3,7 +3,9 @@ const router = express.Router();
 
 const userCtrl = require("../controllers/user");
 
-router.post("/signup", userCtrl.signup);
+const mdpValidatorRoute = require("../models/mdpvalidator");
+
+router.post("/signup", mdpValidatorRoute, userCtrl.signup);
 router.post("/login", userCtrl.login);
 
 module.exports = router;

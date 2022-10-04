@@ -2,7 +2,7 @@ const Sauce = require("../models/Sauce");
 const fs = require("fs");
 
 exports.createSauce = (req, res, next) => {
-  console.log(req.body);
+  // console.log(req.body);
   const sauceObject = JSON.parse(req.body.sauce);
   delete sauceObject._id;
   delete sauceObject._userId;
@@ -28,7 +28,7 @@ exports.getOneSauce = (req, res, next) => {
 };
 
 exports.getAllSauces = (req, res, next) => {
-  console.log(req.auth);
+  // console.log(req.auth);
   Sauce.find()
     .then((sauces) => res.status(200).json(sauces))
     .catch((error) => res.status(400).json({ error }));
@@ -49,6 +49,15 @@ exports.modifySauce = (req, res, next) => {
       if (sauce.userId != req.auth.userId) {
         res.status(401).json({ message: "Non-autorisé" });
       } else {
+        const filename = sauce.imageUrl.split("/images/")[1];
+        // fs.unlinkSync(`${filename}`, () => {
+        //   Sauce.deleteOne({imageUrl: req.file })
+
+        fs.unlink(`images/${filename}`, function (err) {
+          if (err) throw err;
+          console.log("File deleted!");
+        });
+
         Sauce.updateOne(
           { _id: req.params.id },
           { ...sauceObject, _id: req.params.id }
@@ -129,16 +138,22 @@ exports.likeSauces = (req, res, next) => {
           break;
 
         case -1:
-          Sauce.updateOne(
-            { _id: sauceId },
-            { $push: { usersDisliked: userId }, $inc: { dislikes: +1 } }
-          )
-            .then(() => {
-              res.status(200).json({ message: `Je n'aime pas` });
-            })
-            .catch((error) => res.status(400).json({ error }));
+          Sauce.findOne({ _id: sauceId }).then((sauce) => {
+            if (sauce.usersDisliked.includes(userId)) {
+              return res
+                .status(400)
+                .json({ message: "Vous avez déjà disliker" });
+            }
+            Sauce.updateOne(
+              { _id: sauceId },
+              { $push: { usersDisliked: userId }, $inc: { dislikes: +1 } }
+            )
+              .then(() => {
+                res.status(200).json({ message: `Je n'aime pas` });
+              })
+              .catch((error) => res.status(400).json({ error }));
+          });
           break;
-
         default:
           res.status(500).json({ error });
       }

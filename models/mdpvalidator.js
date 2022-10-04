@@ -1,11 +1,10 @@
-const mongoose = require("mongoose");
 // Call security module password-validator
 const passwordValidator = require("password-validator");
 // Create schema for pasword-validator module
 const schemaMdpValidator = new passwordValidator();
 
 // Add properties to it
-schema
+schemaMdpValidator
   .is()
   .min(8) // Minimum length 8
   .is()
@@ -23,4 +22,12 @@ schema
   .not()
   .oneOf(["Passw0rd", "Password123, 12345678, 00000000"]); // Blacklist these values
 
-module.exports = mongoose.model("mdpvalidator", schemaMdpValidator);
+module.exports = (req, res, next) => {
+  if (schemaMdpValidator.validate(req.body.password)) {
+    next();
+  } else {
+    return res
+      .status(400)
+      .json({ message: " Le mot de passe n'est pas assez fort" });
+  }
+};

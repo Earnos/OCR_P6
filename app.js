@@ -1,12 +1,12 @@
-// Call express modules
+// express modules
 const express = require("express");
-// Call mongoose packages
+// mongoose packages
 const mongoose = require("mongoose");
-// Call .env files - security module
+// .env files - security module
 require("dotenv").config();
-// console.log(process.env);
+// Security module for cookies and headers http request protection
 const helmet = require("helmet");
-// Call module for limite the time of your connexion
+// module for limit the time of your connexion
 const rateLimit = require("express-rate-limit");
 
 // Routes importations
@@ -15,7 +15,6 @@ const userRoutes = require("./routes/user");
 
 // path access
 const path = require("path");
-
 // Connect to database MongoDB
 mongoose
   .connect(process.env.SECRET_KEY, {
@@ -44,10 +43,7 @@ app.use((req, res, next) => {
   );
   next();
 });
-// Get .env file content
-app.get("/", function (req, res) {
-  res.send(process.env.S3_BUCKET);
-});
+
 // Create the limiter time for express-rate-limit module
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -57,11 +53,11 @@ const limiter = rateLimit({
 });
 
 // Register Routes in app
-app.use("/api/sauces", saucesRoutes);
-app.use("/api/auth", userRoutes);
-app.use("/images", express.static(path.join(__dirname, "images"))); // groutes gestionnary for POST images
+app.use("/images", express.static(path.join(__dirname, "images"))); // routes gestionnary for POST images
 app.use(helmet());
 app.use(limiter);
+app.use("/api/sauces", saucesRoutes);
+app.use("/api/auth", userRoutes);
 
 // export modules for the application
 module.exports = app;

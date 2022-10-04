@@ -1,13 +1,16 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
+const CryptoJS = require("crypto-js");
+console.log(CryptoJS.HmacSHA1("Message", "Key"));
 
 exports.signup = (req, res, next) => {
+  // trouver un moyen de crypté l'email ( et pas texte brut), avant de l'enregistrer dans la database
   bcrypt
     .hash(req.body.password, 10)
     .then((hash) => {
       const user = new User({
-        email: req.body.email,
+        email: req.body.email, // variable cryptée
         password: hash
       });
       user
@@ -34,9 +37,13 @@ exports.login = (req, res, next) => {
           } else {
             res.status(200).json({
               userId: user._id,
-              token: jwt.sign({ userId: user._id }, "RANDOM_TOKEN_SECRET", {
-                expiresIn: "24h"
-              })
+              token: jwt.sign(
+                { userId: user._id },
+                process.env.RANDOM_TOKEN_SECRET,
+                {
+                  expiresIn: "24h"
+                }
+              )
             });
           }
         })
