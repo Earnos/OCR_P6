@@ -28,6 +28,8 @@ module.exports = (req, res, next) => {
   } else {
     return res
       .status(400)
-      .json({ message: " Le mot de passe n'est pas assez fort" });
+      .json({
+        message: "Le mot de passe a besoin d'une auhentification forte"
+      });
   }
 };

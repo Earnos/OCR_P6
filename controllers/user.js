@@ -1,16 +1,22 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
+// Package for token connexion attributions
 const jwt = require("jsonwebtoken");
+//encrypt & decrypt email package
 const CryptoJS = require("crypto-js");
-console.log(CryptoJS.HmacSHA1("Message", "Key"));
+// To use environement variables
+require("dotenv").config();
 
 exports.signup = (req, res, next) => {
-  // trouver un moyen de crypté l'email ( et pas texte brut), avant de l'enregistrer dans la database
+  const emailEncrypt = CryptoJS.HmacSHA256(
+    req.body.email,
+    `${process.env.CRYPTOJS_EMAIL}`
+  ).toString();
   bcrypt
     .hash(req.body.password, 10)
     .then((hash) => {
       const user = new User({
-        email: req.body.email, // variable cryptée
+        email: emailEncrypt,
         password: hash
       });
       user
@@ -22,7 +28,11 @@ exports.signup = (req, res, next) => {
 };
 
 exports.login = (req, res, next) => {
-  User.findOne({ email: req.body.email })
+  const emailDecrypt = CryptoJS.HmacSHA256(
+    req.body.email,
+    `${process.env.CRYPTOJS_EMAIL}`
+  ).toString();
+  User.findOne({ email: emailDecrypt })
     .then((user) => {
       if (user === null) {
         res.status(401).json({ message: "Login ou mot de passe incorrecte" });

@@ -1,6 +1,6 @@
 const express = require("express");
 
-// Module d'identification
+// Identification module
 const auth = require("../middleware/auth");
 
 // Create an Express router
@@ -9,7 +9,7 @@ const router = express.Router();
 // import all controllers
 const saucesCtrl = require("../controllers/sauces");
 
-// import de multer
+// import of multer (files gestionnary)
 const multer = require("../middleware/multer-config");
 
 router.get("/", auth, saucesCtrl.getAllSauces);

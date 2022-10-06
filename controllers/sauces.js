@@ -1,8 +1,8 @@
 const Sauce = require("../models/Sauce");
+// Files gestionnary module
 const fs = require("fs");
 
 exports.createSauce = (req, res, next) => {
-  // console.log(req.body);
   const sauceObject = JSON.parse(req.body.sauce);
   delete sauceObject._id;
   delete sauceObject._userId;
@@ -28,7 +28,6 @@ exports.getOneSauce = (req, res, next) => {
 };
 
 exports.getAllSauces = (req, res, next) => {
-  // console.log(req.auth);
   Sauce.find()
     .then((sauces) => res.status(200).json(sauces))
     .catch((error) => res.status(400).json({ error }));
@@ -50,12 +49,9 @@ exports.modifySauce = (req, res, next) => {
         res.status(401).json({ message: "Non-autorisé" });
       } else {
         const filename = sauce.imageUrl.split("/images/")[1];
-        // fs.unlinkSync(`${filename}`, () => {
-        //   Sauce.deleteOne({imageUrl: req.file })
-
         fs.unlink(`images/${filename}`, function (err) {
           if (err) throw err;
-          console.log("File deleted!");
+          console.log("Fichier supprimé !");
         });
 
         Sauce.updateOne(
@@ -91,10 +87,6 @@ exports.deleteSauce = (req, res, next) => {
 };
 
 exports.likeSauces = (req, res, next) => {
-  // console.log(req.body.like);
-  // console.log(req.params);
-  // console.log(req.params.id);
-  // console.log(req.body.userId);
   Sauce.findOne({ _id: req.params.id })
     .then(() => {
       const like = req.body.like;
@@ -103,15 +95,22 @@ exports.likeSauces = (req, res, next) => {
 
       switch (like) {
         case 1:
-          Sauce.updateOne(
-            { _id: sauceId },
-            { $push: { usersLiked: userId }, $inc: { likes: +1 } }
-          )
-            .then(() => res.status(200).json({ message: "J'aime" }))
-            .catch((error) => {
-              console.log(error);
-              res.status(400).json({ error });
-            });
+          Sauce.findOne({ _id: sauceId }).then((sauce) => {
+            if (sauce.usersLiked.includes(userId)) {
+              return res.status(400).json({ message: "Vous avez déjà like" });
+            }
+            Sauce.updateOne(
+              { _id: sauceId },
+              { $push: { usersLiked: userId }, $inc: { likes: +1 } }
+            )
+              .then(() => {
+                res.status(200).json({ message: "J'aime" });
+              })
+              .catch((error) => {
+                console.log(error);
+                res.status(400).json({ error });
+              });
+          });
           break;
 
         case 0:
